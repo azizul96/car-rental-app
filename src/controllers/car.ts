@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import Car from '../models/Car';
+import Car, { ICar } from '../models/Car';
+import Booking from '../models/Booking';
 import { z } from 'zod';
 
 const createCar = async (req: Request, res: Response) => {
@@ -140,4 +141,78 @@ const deleteCar = async (req: Request, res: Response) => {
   }
 };
 
-export { createCar, getAllCars, getCar, updateCar, deleteCar };
+const returnCar = async (req: Request, res: Response) => {
+  const { bookingId, endTime } = req.body;
+
+  try {
+    // Find the booking by ID and populate user and car
+    const booking = await Booking.findById(bookingId)
+      .populate('user')
+      .populate('car');
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: 'Booking not found' });
+    }
+
+    // Ensure car is of type ICar
+    const car = booking.car as ICar;
+
+    // Update the booking with endTime and calculate totalCost
+    booking.endTime = endTime;
+
+    // Calculate duration in hours
+    const startTimeParts = booking.startTime.split(':');
+    const endTimeParts = endTime.split(':');
+
+    const startDate = new Date(booking.date);
+    startDate.setHours(
+      parseInt(startTimeParts[0]),
+      parseInt(startTimeParts[1]),
+    );
+
+    const endDate = new Date(booking.date);
+    endDate.setHours(parseInt(endTimeParts[0]), parseInt(endTimeParts[1]));
+
+    const durationMs = endDate.getTime() - startDate.getTime();
+    const durationHours = durationMs / (1000 * 60 * 60);
+
+    if (durationHours <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid endTime: Must be after startTime',
+      });
+    }
+
+    const pricePerHour = car.pricePerHour;
+    const totalCost = durationHours * pricePerHour;
+
+    booking.totalCost = totalCost;
+    car.status = 'available'; // Update car status to available
+
+    // Save the updated booking and car
+    await booking.save();
+    await car.save();
+
+    res.json({
+      success: true,
+      statusCode: 200,
+      message: 'Car returned successfully',
+      data: booking,
+    });
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('Error returning car:', error.message, error.stack);
+      res.status(500).json({
+        success: false,
+        message: 'Server Error',
+        error: error.message,
+      });
+    } else {
+      console.error('Unknown error:', error);
+      res.status(500).json({ success: false, message: 'Server Error' });
+    }
+  }
+};
+
+export { createCar, getAllCars, getCar, updateCar, deleteCar, returnCar };

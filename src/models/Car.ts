@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
-interface ICar extends Document {
+export interface ICar extends Document {
   name: string;
   description: string;
   color: string;
@@ -9,6 +9,8 @@ interface ICar extends Document {
   features: string[];
   pricePerHour: number;
   isDeleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const CarSchema: Schema = new Schema(

@@ -1,13 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
-
-interface ICar extends Document {
-  pricePerHour: number;
-}
+import { IUser } from './User';
+import { ICar } from './Car';
 
 interface IBooking extends Document {
   date: Date;
-  user: mongoose.Schema.Types.ObjectId;
-  car: ICar | mongoose.Schema.Types.ObjectId; // Allow both populated and unpopulated state
+  user: IUser | mongoose.Schema.Types.ObjectId;
+  car: ICar | mongoose.Schema.Types.ObjectId;
   startTime: string;
   endTime: string | null;
   totalCost: number;

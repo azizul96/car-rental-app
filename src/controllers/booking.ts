@@ -83,61 +83,6 @@ const getMyBookings = async (req: Request, res: Response) => {
   }
 };
 
-const returnCar = async (req: Request, res: Response) => {
-  const returnSchema = z.object({
-    bookingId: z.string(),
-    endTime: z.string(),
-  });
-
-  try {
-    const validatedData = returnSchema.parse(req.body);
-    const booking = await Booking.findById(validatedData.bookingId).populate(
-      'car',
-    );
-
-    if (!booking) {
-      return res.status(404).json({
-        success: false,
-        message: 'Booking not found',
-      });
-    }
-
-    const car = booking.car as any;
-
-    if (!car.pricePerHour) {
-      return res.status(500).json({
-        success: false,
-        message: 'Car data is not properly populated',
-      });
-    }
-
-    booking.endTime = validatedData.endTime;
-    booking.totalCost = calculateTotalCost(
-      car.pricePerHour,
-      booking.startTime,
-      validatedData.endTime,
-    );
-    await booking.save();
-
-    res.json({
-      success: true,
-      statusCode: 200,
-      message: 'Car returned successfully',
-      data: booking,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({
-        success: false,
-        message: 'Validation Error',
-        errorMessages: error.errors,
-      });
-    } else {
-      res.status(500).json({ success: false, message: 'Server Error' });
-    }
-  }
-};
-
 const calculateTotalCost = (
   pricePerHour: number,
   startTime: string,
@@ -150,4 +95,4 @@ const calculateTotalCost = (
   return hours * pricePerHour;
 };
 
-export { bookCar, getAllBookings, getMyBookings, returnCar };
+export { bookCar, getAllBookings, getMyBookings };

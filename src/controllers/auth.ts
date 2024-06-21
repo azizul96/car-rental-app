@@ -68,9 +68,13 @@ const signIn = async (req: Request, res: Response) => {
       });
     }
 
-    const token = jwt.sign({ _id: user._id }, 'your_jwt_secret', {
-      expiresIn: '1h',
-    });
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      'your_jwt_secret',
+      {
+        expiresIn: '24h',
+      },
+    );
 
     res.json({
       success: true,
