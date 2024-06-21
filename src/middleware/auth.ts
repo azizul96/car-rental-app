@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
 
-const auth = async (req: Request, res: Response, next: NextFunction) => {
+export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) {
     return res
@@ -29,4 +29,13 @@ const auth = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export default auth;
+export const authorize = (roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: 'Forbidden: You do not have the required permissions',
+      });
+    }
+    next();
+  };
+};

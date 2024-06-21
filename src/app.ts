@@ -3,11 +3,10 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import bookingRoutes from './routes/booking';
 import authRoutes from './routes/auth';
 import carRoutes from './routes/car';
-import authenticate from './middlewares/authenticate';
-import { notFound, errorHandler } from './middlewares/errorHandler';
+import bookingRoutes from './routes/booking';
+import errorHandler from './middleware/errorHandler';
 
 // Load environment variables from .env file
 dotenv.config();
@@ -22,10 +21,9 @@ app.use(bodyParser.json());
 // Routes
 
 app.use('/api/auth', authRoutes);
-app.use('/api/cars', authenticate, carRoutes);
-app.use('/api/bookings', authenticate, bookingRoutes);
+app.use('/api/cars', carRoutes);
+app.use('/api/bookings', bookingRoutes);
 
-app.use(notFound);
 app.use(errorHandler);
 
 // MongoDB connection

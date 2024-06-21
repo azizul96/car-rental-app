@@ -102,9 +102,18 @@ const returnCar = async (req: Request, res: Response) => {
       });
     }
 
+    const car = booking.car as any;
+
+    if (!car.pricePerHour) {
+      return res.status(500).json({
+        success: false,
+        message: 'Car data is not properly populated',
+      });
+    }
+
     booking.endTime = validatedData.endTime;
     booking.totalCost = calculateTotalCost(
-      booking.car.pricePerHour,
+      car.pricePerHour,
       booking.startTime,
       validatedData.endTime,
     );

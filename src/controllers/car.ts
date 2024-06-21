@@ -120,11 +120,7 @@ const deleteCar = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
-    const car = await Car.findByIdAndUpdate(
-      id,
-      { isDeleted: true },
-      { new: true },
-    );
+    const car = await Car.findByIdAndDelete(id, { isDeleted: true });
 
     if (!car) {
       return res.status(404).json({
